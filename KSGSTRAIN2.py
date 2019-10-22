@@ -5,13 +5,13 @@ from keras.optimizers import SGD, Nadam, RMSprop
 from keras.constraints import maxnorm
 from keras.regularizers import l2
 from keras.layers.advanced_activations import LeakyReLU, PReLU
-from keras.wrappers.scikit_learn import KerasRegressor
-from sklearn import preprocessing #
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.pipeline import Pipeline
-from scipy.stats.stats import pearsonr
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error
+#from keras.wrappers.scikit_learn import KerasRegressor
+#from sklearn import preprocessing #
+#from sklearn.preprocessing import MinMaxScaler
+#from sklearn.pipeline import Pipeline
+#from scipy.stats.stats import pearsonr
+#from sklearn.model_selection import train_test_split
+#from sklearn.metrics import mean_absolute_error
 import numpy as np
 import tensorflow as tf
 import keras.backend as kb
@@ -46,19 +46,23 @@ def rmse(y_true, y_pred):
 
 # reading the input data
 
-SGSDATA = np.load('NUSGS_DSM3.npy')
-random.shuffle(SGSDATA)
+SGSDATA = np.load('RANDOMDATA/NUSGSTRAIN.npy')
+SGSDATA2 = np.load('RANDOMDATA/TESTING_DATA.npy')
+#random.shuffle(SGSDATA)
 print (SGSDATA.shape)
+print (SGSDATA2.shape)
 
-X_train0 = SGSDATA[:,0:13]
-Y_train0 = -SGSDATA[:,14:15]
-print (SGSDATA.shape)
+X_train = SGSDATA[:,0:13]
+X_test = SGSDATA2[:,0:13]
+Y_train = -SGSDATA[:,14:15]
+Y_test = -SGSDATA2[:,14:15]
+#print (SGSDATA.shape)
 
-print (Y_train0[1,0])
-print (X_train0[1,0],X_train0[1,1],X_train0[1,2],X_train0[1,3],X_train0[1,4],X_train0[1,5],X_train0[1,6],X_train0[1,7],X_train0[1,8],X_train0[1,9],X_train0[1,10],X_train0[1,11],X_train0[1,12])
+#print (Y_train[1,0])
+#print (X_train[1,0],X_train[1,1],X_train[1,2],X_train[1,3],X_train[1,4],X_train[1,5],X_train0[1,6],X_train0[1,7],X_train0[1,8],X_train0[1,9],X_train0[1,10],X_train0[1,11],X_train0[1,12])
 
-X_train, X_test, Y_train, Y_test = train_test_split(X_train0,Y_train0, test_size=0.1, random_state=42)
-print (X_train.shape, X_test.shape, Y_train.shape, Y_test.shape)
+#X_train, X_test, Y_train, Y_test = train_test_split(X_train0,Y_train0, test_size=0.1, random_state=42)
+#print (X_train.shape, X_test.shape, Y_train.shape, Y_test.shape)
 
 XMEAN=np.max(X_train,axis=0) #np.mean(X_train,axis=0)
 XSTDD=np.min(X_train,axis=0)
@@ -69,7 +73,7 @@ np.savetxt('kNxmin.dat',XSTDD)
 
 for j in range(13):
  X_train[:,j]= (X_train[:,j]-XSTDD[j])/(XMEAN[j]-XSTDD[j]) #(X_train[:,j]-XMEAN[j])/XSTDD[j]
- X_test[:,j]= (X_test[:,j]-XSTDD[j])/(XMEAN[j]-XSTDD[j])  #(X_test[:,j]-XMEAN[j])/XSTDD[j]
+ X_test[:,j] = (X_test[:,j]-XSTDD[j])/(XMEAN[j]-XSTDD[j])  #(X_test[:,j]-XMEAN[j])/XSTDD[j]
 
 #print XMEAN,XSTDD
 
@@ -85,7 +89,7 @@ np.savetxt('kNymax.dat',YDATA)
 #np.savetxt('ymin.dat',YSTDD)
 
 Y_train[:]=(Y_train[:]-YSTDD)/(YMEAN-YSTDD) #(Y_train[:]-YMEAN)/YSTDD
-Y_test[:]=(Y_test[:]-YSTDD)/(YMEAN-YSTDD)
+Y_test[:] =(Y_test[:]-YSTDD)/(YMEAN-YSTDD)
 print (YMEAN,YSTDD)
 
 #fix random seed for reproducibility
@@ -102,7 +106,7 @@ model.add(Dense(16,                     kernel_initializer='uniform', activation
 model.add(Dense(1,                      kernel_initializer='uniform'))
 # Compile model
 model.compile(loss='mean_squared_error', optimizer='rmsprop')
-history = model.fit(X_train,Y_train, epochs=200, batch_size=240, validation_split=0.1)
+history = model.fit(X_train,Y_train, epochs=100, batch_size=240, validation_split=0.24822695035)
 
 score  = model.predict(X_test)
 
@@ -136,6 +140,3 @@ train_loss = history.history['loss']
 val_loss   = history.history['val_loss']
 np.save('ktrain_lossN.npy',train_loss)
 np.save('kval_lossN.npy',val_loss)
-
-
-
