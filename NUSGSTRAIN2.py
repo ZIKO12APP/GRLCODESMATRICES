@@ -5,13 +5,13 @@ from keras.optimizers import SGD, Nadam, RMSprop
 from keras.constraints import maxnorm
 from keras.regularizers import l2
 from keras.layers.advanced_activations import LeakyReLU, PReLU
-from keras.wrappers.scikit_learn import KerasRegressor
-from sklearn import preprocessing #
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.pipeline import Pipeline
-from scipy.stats.stats import pearsonr
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error
+#from keras.wrappers.scikit_learn import KerasRegressor
+#from sklearn import preprocessing 
+#from sklearn.preprocessing import MinMaxScaler
+#from sklearn.pipeline import Pipeline
+#from scipy.stats.stats import pearsonr
+#from scikit_learn.model_selection import train_test_split
+#from scikit_learn.metrics import mean_absolute_error
 import numpy as np
 import tensorflow as tf
 import keras.backend as kb
@@ -20,7 +20,7 @@ import os
 import threading
 import random
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '3' #use GPU with ID=0
+os.environ["CUDA_VISIBLE_DEVICES"] = '1' #use GPU with ID=0
 config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = 0.5 # maximun alloc gpu50% of MEM
 config.gpu_options.allow_growth = True #allocate dynamically
@@ -47,21 +47,30 @@ def rmse(y_true, y_pred):
 # reading the input data
 
 #SGSDATA = np.genfromtxt('NUSGS.dat')
-SGSDATA = np.load('NUSGS_DSM3.npy')
-random.shuffle(SGSDATA)
+SGSDATA = np.load('RANDOMDATA/NUSGSTRAIN.npy')
+SGSDATA2 = np.load('RANDOMDATA/TESTING_DATA.npy')
+#random.shuffle(SGSDATA)
 print (SGSDATA.shape)
+print (SGSDATA2.shape)
+
 #np.save('NUSGS.npy',SGSDATA)
 
 #X_train0 = SGSDATA[:,0:9]
-Y_train0 = -SGSDATA[:,13]
+Y_train = -SGSDATA[:,13]
+Y_test  = -SGSDATA2[:,13]
 SGSDATA = np.delete(SGSDATA,3,1)
+SGSDATA2 = np.delete(SGSDATA2,3,1)
+
 print (SGSDATA.shape)
-X_train0 = SGSDATA[:,0:9]
+print (SGSDATA2.shape)
 
-print (Y_train0,X_train0)
+X_train = SGSDATA[:,0:9]
+X_test = SGSDATA2[:,0:9]
 
-X_train, X_test, Y_train, Y_test = train_test_split(X_train0,Y_train0, test_size=0.1, random_state=42)
-print (X_train.shape, X_test.shape, Y_train.shape, Y_test.shape)
+print (Y_train,X_train)
+
+#X_train, X_test, Y_train, Y_test = train_test_split(X_train0,Y_train0, test_size=0.1, random_state=42)
+#print (X_train.shape, X_test.shape, Y_train.shape, Y_test.shape)
 
 XMEAN=np.max(X_train,axis=0) #np.mean(X_train,axis=0)
 XSTDD=np.min(X_train,axis=0)
@@ -72,7 +81,7 @@ np.savetxt('xnmin.dat',XSTDD)
 
 for j in range(9):
  X_train[:,j]= (X_train[:,j]-XSTDD[j])/(XMEAN[j]-XSTDD[j]) #(X_train[:,j]-XMEAN[j])/XSTDD[j]
- X_test[:,j]= (X_test[:,j]-XSTDD[j])/(XMEAN[j]-XSTDD[j])  #(X_test[:,j]-XMEAN[j])/XSTDD[j]
+ X_test[:,j] = (X_test[:,j]-XSTDD[j])/(XMEAN[j]-XSTDD[j])  #(X_test[:,j]-XMEAN[j])/XSTDD[j]
 
 #print XMEAN,XSTDD
 
@@ -87,7 +96,7 @@ print (YDATA)
 np.savetxt('ynmax.dat',YDATA)
 
 Y_train[:]=(Y_train[:]-YSTDD)/(YMEAN-YSTDD) #(Y_train[:]-YMEAN)/YSTDD
-Y_test[:]=(Y_test[:]-YSTDD)/(YMEAN-YSTDD)
+Y_test[:] =(Y_test[:]-YSTDD)/(YMEAN-YSTDD)
 
 print (YMEAN,YSTDD)
 
@@ -102,10 +111,9 @@ model.add(Dense(16,                    kernel_initializer='uniform', activation 
 model.add(Dense(1,                     kernel_initializer='uniform'))
 # Compile model
 model.compile(loss='mean_squared_error', optimizer='rmsprop')
-history = model.fit(X_train,Y_train, epochs=200, batch_size=240,validation_split=0.1)
+history = model.fit(X_train,Y_train, epochs=100, batch_size=240,validation_split=0.24822695035)
 
 score  = model.predict(X_test)
-
 score[:]=score[:]*(YMEAN-YSTDD)+YSTDD #score[:]*YSTDD+YMEAN
 
 print("Larger: %.2f (%.2f) MSE" % (score.mean(), score.std()))
@@ -136,7 +144,3 @@ train_loss = history.history['loss']
 val_loss   = history.history['val_loss']
 np.save('train_lossN.npy',train_loss)
 np.save('val_lossN.npy',val_loss)
-
-
-
-
