@@ -10,7 +10,7 @@ from keras.layers.advanced_activations import LeakyReLU, PReLU
 #from sklearn.preprocessing import MinMaxScaler
 #from sklearn.pipeline import Pipeline
 #from scipy.stats.stats import pearsonr
-#from scikit_learn.model_selection import train_test_split
+from scikit_learn.model_selection import train_test_split
 #from scikit_learn.metrics import mean_absolute_error
 import numpy as np
 import tensorflow as tf
@@ -48,29 +48,29 @@ def rmse(y_true, y_pred):
 
 #SGSDATA = np.genfromtxt('NUSGS.dat')
 SGSDATA = np.load('RANDOMDATA/NUSGSTRAIN.npy')
-SGSDATA2 = np.load('RANDOMDATA/TESTING_DATA.npy')
+#SGSDATA2 = np.load('RANDOMDATA/TESTING_DATA.npy')
 #random.shuffle(SGSDATA)
 print (SGSDATA.shape)
-print (SGSDATA2.shape)
+#print (SGSDATA2.shape)
 
 #np.save('NUSGS.npy',SGSDATA)
 
 #X_train0 = SGSDATA[:,0:9]
-Y_train = -SGSDATA[:,13]
-Y_test  = -SGSDATA2[:,13]
+Y_train0 = -SGSDATA[:,13]
+#Y_test  = -SGSDATA2[:,13]
 SGSDATA = np.delete(SGSDATA,3,1)
-SGSDATA2 = np.delete(SGSDATA2,3,1)
+#SGSDATA2 = np.delete(SGSDATA2,3,1)
 
 print (SGSDATA.shape)
-print (SGSDATA2.shape)
+#print (SGSDATA2.shape)
 
-X_train = SGSDATA[:,0:9]
-X_test = SGSDATA2[:,0:9]
+X_train0 = SGSDATA[:,0:9]
+#X_test = SGSDATA2[:,0:9]
 
-print (Y_train,X_train)
+print (Y_train0,X_train0)
 
-#X_train, X_test, Y_train, Y_test = train_test_split(X_train0,Y_train0, test_size=0.1, random_state=42)
-#print (X_train.shape, X_test.shape, Y_train.shape, Y_test.shape)
+X_train, X_test, Y_train, Y_test = train_test_split(X_train0,Y_train0, test_size=0.1, random_state=42)
+print (X_train.shape, X_test.shape, Y_train.shape, Y_test.shape)
 
 XMEAN=np.max(X_train,axis=0) #np.mean(X_train,axis=0)
 XSTDD=np.min(X_train,axis=0)
@@ -111,7 +111,7 @@ model.add(Dense(16,                    kernel_initializer='uniform', activation 
 model.add(Dense(1,                     kernel_initializer='uniform'))
 # Compile model
 model.compile(loss='mean_squared_error', optimizer='rmsprop')
-history = model.fit(X_train,Y_train, epochs=100, batch_size=240,validation_split=0.24822695035)
+history = model.fit(X_train,Y_train, epochs=100, batch_size=240,validation_split=0.1)
 
 score  = model.predict(X_test)
 score[:]=score[:]*(YMEAN-YSTDD)+YSTDD #score[:]*YSTDD+YMEAN
